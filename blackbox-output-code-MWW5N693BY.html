@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Tags Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            padding: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            resize: vertical;
+        }
+
+        textarea {
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results-section {
+            padding: 40px;
+            background: #f8f9fa;
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tags-container {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .tag-category {
+            margin-bottom: 25px;
+        }
+
+        .category-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .input-section, .results-section {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎥 YouTube Tags Generator</h1>
+            <p>Enter your video title and get optimized tags instantly!</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="videoTitle">Video Title:</label>
+                <textarea id="videoTitle" placeholder="Enter your YouTube video title here...&#10;Example: 'How to Make Perfect Pancakes in 5 Minutes'"></textarea>
+            </div>
+            
+            <div class="input-group">
+                <label for="extraKeywords">Extra Keywords (optional):</label>
+                <input type="text" id="extraKeywords" placeholder="cooking, breakfast, easy recipes, pancakes">
+            </div>
+            
+            <button class="generate-btn" onclick="generateTags()">
+                🚀 Generate Tags
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Generating optimized tags...</p>
+        </div>
+
+        <div class="results-section" id="results">
+            <div class="tags-container" id="tagsContainer">
+                <!-- Tags will be generated here -->
+            </div>
+            
+            <button class="copy-btn" onclick="copyAllTags()">
+                📋 Copy All Tags
+            </button>
+            
+            <div class="stats" id="stats">
+                <!-- Stats will be shown here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateTags() {
+            const title = document.getElementById('videoTitle').value.trim();
+            const extraKeywords = document.getElementById('extraKeywords').value.trim();
+            
+            if (!title) {
+                alert('Please enter a video title!');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').classList.remove('show');
+            
+            setTimeout(() => {
+                const tags = generateTagVariations(title, extraKeywords);
+                displayTags(tags);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').classList.add('show');
+            }, 1500);
+        }
+
+        function generateTagVariations(title, extraKeywords) {
+            // Basic processing
+            const titleLower = title.toLowerCase();
+            const words = title.split(/\s+/).filter(w => w.length > 2);
+            const mainKeywords = words.slice(0, 3);
+            
+            const tags = {
+                primary: [],
+                variations: [],
+                longTail: [],
+                related: [],
+                trending: [],
+                branded: []
+            };
+
+            // Primary keywords (exact phrases)
+            tags.primary.push(title);
+            if (words.length >= 2) {
+                tags.primary.push(words.slice(0, 3).join(' '));
+                tags.primary.push(words.slice(0, 2).join(' '));
+            }
+            tags.primary.push(...mainKeywords);
+
+            // Variations and synonyms
+            const variations = generateVariations(titleLower, words);
+            tags.variations.push(...variations.slice(0, 8));
+
+            // Long tail keywords
+            for (let i = 0; i < Math.min(5, words.length); i++) {
+                const phrase = words.slice(i, i + 4).join(' ');
+                if (phrase.length > 10) {
+                    tags.longTail.push(phrase);
+                }
+            }
+
+            // Related tags based on common patterns
+            tags.related = generateRelatedTags(titleLower, extraKeywords);
+
+            // Trending style tags
+            tags.trending = generateTrendingTags(titleLower);
+
+            // Branded/niche tags
+            tags.branded = generateBrandedTags(titleLower);
+
+            return tags;
+        }
+
+        function generateVariations(title, words) {
+            const synonyms = {
+                'how': ['tutorial', 'guide', 'learn', 'step by step'],
+                'make': ['create', 'build', 'recipe', 'diy'],
+                'best': ['top', 'ultimate', 'perfect', 'easy'],
+                'easy': ['simple', 'quick', 'beginner', 'fast'],
+                '2024': ['2025', 'latest', 'new', 'updated']
+            };
+
+            const variations = [];
+            words.forEach(word => {
+                if (synonyms[word]) {
+                    synonyms[word].forEach(syn => {
+                        variations.push(`${syn} ${words.slice(1).join(' ')}`);
+                    });
+                }
+            });
+
+            variations.push(`${title} tutorial`);
+            variations.push(`${title} for beginners`);
+            variations.push(`easy ${title}`);
+            variations.push(`best ${title}`);
+
+            return variations;
+        }
+
+        function generateRelatedTags(title, extraKeywords) {
+            const related = [];
+            if (extraKeywords) {
+                related.push(...extraKeywords.split(',').map(k => k.trim()));
+            }
+            related.push('tips', 'tricks', 'guide', 'tutorial', 'beginner');
+            return related.slice(0, 10);
+        }
+
+        function generateTrendingTags(title) {
+            return ['2024', 'new', 'latest', 'trending', 'viral', 'popular'];
+        }
+
+        function generateBrandedTags(title) {
+            return ['full guide', 'complete tutorial', 'step by step', 'in depth'];
+        }
+
+        function displayTags(tags) {
+            const container = document.getElementById('tagsContainer');
+            let html = '';
+
+            // Primary Tags
+            html += `
+                <div class="tag-category">
+                    <div class="category-title">🔥 Primary Keywords</div>
+                    <div class="tags-list">
+            `;
+            tags.primary.forEach(tag => {
+                html += `<span class="tag" onclick="copyTag('${tag}')">${tag}</span>`;
+            });
+            html += '</div></div>';
+
+            // Variations
+            html += `
+                <div class="tag-category">
+                    <div class="category-title">✨ Variations</div>
+                    <div class="tags-list">
+            `;
+            tags.variations.forEach(tag => {
+                html += `<span class="tag" onclick="copyTag('${tag}')">${tag}</span>`;
+            });
+            html += '</div></div>';
+
+            // Long Tail
+            html += `
+                <div class="tag-category">
+                    <div class="category-title">📈 Long Tail Keywords</div>
+                    <div class="tags-list">
+            `;
+            tags.longTail.forEach(tag => {
+                html += `<span class="tag" onclick="copyTag('${tag}')">${tag}</span>`;
+            });
+            html += '</div></div>';
+
+            // Other categories
+            ['related', 'trending', 'branded'].forEach(category => {
+                html += `
+                    <div class="tag-category">
+                        <div class="category-title">${getCategoryIcon(category)} ${category.charAt(0).toUpperCase() + category.slice(1)}</div>
+                        <div class="tags-list">
+                `;
+                tags[category].forEach(tag => {
+                    html += `<span class="tag" onclick="copyTag('${tag}')">${tag}</span>`;
+                });
+                html += '</div></div>';
+            });
+
+            container.innerHTML = html;
+
+            // Update stats
+            const totalTags = Object.values(tags).flat().length;
+            document.getElementById('stats').innerHTML = `
+                <span>Total Tags: ${totalTags}</span>
+                <span>Primary: ${tags.primary.length}</span>
+                <span>Ready to Copy! ✅</span>
+            `;
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                related: '🔗',
+                trending: '📊',
+                branded: '🏷️'
+            };
+            return icons[category] || '📌';
+        }
+
+        function copyAllTags() {
+            const tags = Array.from(document.querySelectorAll('.tag')).map(tag => tag.textContent);
+            const allTags = tags.join(', ');
+            
+            navigator.clipboard.writeText(allTags).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#28a745';
+                }, 2000);
+            });
+        }
+
+        function copyTag(tagText) {
+            navigator.clipboard.writeText(tagText).then(() => {
+                // Visual feedback
+                const tag = event.target;
+                const originalBg = tag.style.background;
+                tag.style.background = '#28a745';
+                tag.textContent = '✅ Copied!';
+                
+                setTimeout(() => {
+                    tag.style.background = originalBg;
+                    tag.textContent = tagText;
+                }, 1500);
+            });
+        }
+
+        // Enter key support
+        document.getElementById('videoTitle').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                generateTags();
+            }
+        });
+
+        // Auto-generate example on load
+        window.onload = function() {
+            document.getElementById('videoTitle').value = 'How to Make Perfect Pancakes in 5 Minutes';
+        };
+    </script>
+</body>
+</html>
